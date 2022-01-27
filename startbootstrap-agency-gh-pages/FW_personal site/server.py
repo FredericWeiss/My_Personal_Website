@@ -26,8 +26,6 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
 
-# PATH = "static/assets/portfolio_files"
-
 
 class Experience(db.Model):
     id = db.Column(db.Integer, primary_key=True)
