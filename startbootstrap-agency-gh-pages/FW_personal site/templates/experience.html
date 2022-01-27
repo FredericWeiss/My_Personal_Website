@@ -1,0 +1,21 @@
+{% include "header.html" %}
+{% include "navbar_simple.html" %}
+
+{% for entry in exp_db %}
+    {% if entry.header == header %}
+        <header class="exphead" style="background-image: url('/static/assets/img/experience/{{ entry.image }}')!important">
+            <div class="container">
+                <div class="exphead-heading text-uppercase">{{ header }}</div>
+            </div>
+            <p class="reference_one">Photo by <a href="{{ entry.reference_one }}">{{ entry.reference_two }}</a> on <a href="{{ entry.reference_three }}">{{ entry.reference_four }}</a></p>
+        </header>
+    {% endif %}
+{% endfor %}
+
+
+
+
+<h1 style="margin: 300px 100px">Test</h1>
+
+{% include "footer.html" %}
+{% include "end_of_page.html" %}

@@ -1,0 +1,62 @@
+'This module is responsible to insert the data from the form into the database
+
+Sub insert()
+
+'dimension of the variables
+Dim index As Integer
+Dim identificator As Integer
+Dim id_previous As Integer
+Dim finalrow As Integer
+
+'initialize all repetitive variables
+Call initialize_wb
+
+If WSI.Range("B2") = "Add Task" Then 'check if the header on the form equals "Add Task"
+    DataTable.ListRows.Add 'Add a new row to the database
+    index = DataTable.ListRows.Count 'terminate the index of the new task
+    id_previous = col_id_db(index - 1) 'getting and inserting the identificator of the new task
+    identificator = id_previous + 1
+Else 'if the header does not equal "Add Task" the changed data should be inserted
+    On Error Resume Next
+    index = Application.WorksheetFunction.Match(WSI.Range("E6"), col_task_db, 0) 'get the index of the searched task
+    On Error GoTo 0
+    identificator = col_id_db(index) 'get the identificator
+End If
+
+If WSI.Range("K6") = "" Or WSI.Range("K8") = "" Then 'check if the required field are filled
+    MsgBox "The fields 'Days Left' and 'Expected Duration' are required", Title:="Field Required" 'inform user if required fields are not filled
+    Exit Sub
+End If
+
+'insert the data from the form into the database
+Call insert_values(index, header_id_db, DataTable, identificator) 'call the sub that insert the data into the database
+Call insert_values(index, header_task_db, DataTable, WSI.Range("E6"))
+Call insert_values(index, header_category_db, DataTable, WSI.Range("E8"))
+Call insert_values(index, header_main_db, DataTable, WSI.Range("E10"))
+
+Call insert_values(index, header_left_db, DataTable, WSI.Range("K6"))
+Call insert_values(index, header_duration_db, DataTable, WSI.Range("K8"))
+Call insert_values(index, header_mandatory_db, DataTable, WSI.Range("K10"))
+Call insert_values(index, header_benefit_db, DataTable, WSI.Range("O6"))
+Call insert_values(index, header_timetobenefit_db, DataTable, WSI.Range("O8"))
+
+WSI.Visible = xlSheetHidden 'hide the form
+Call get_ranking 'refresh the ranking
+WSD.Activate 'activate the dashboard
+
+End Sub
+
+'This sub inserts the values from the form into the database
+Public Sub insert_values(ByVal index_db As Integer, header As String, DataTable As ListObject, value As Variant)
+
+'dimension of the variables
+Dim col As Range
+
+'set current column header
+Set col = DataTable.ListColumns(header).DataBodyRange
+
+'insert value into the database
+col(index_db) = value
+
+End Sub
+

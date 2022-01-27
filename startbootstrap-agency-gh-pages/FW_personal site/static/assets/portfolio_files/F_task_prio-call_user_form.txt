@@ -1,0 +1,91 @@
+'This module is responsible for calling and closing the forms to insert and change tasks
+
+'This sub calls the insert form
+Sub call_insert_form()
+
+'initialize all repetitive variables
+Call initialize_wb
+
+'delete all existing entries
+With WSI
+    .Range("E6:E10").ClearContents
+    .Range("K6:k10").ClearContents
+    .Range("O6:O8").ClearContents
+End With
+
+WSI.Range("B2") = "Add Task" 'change header
+WSI.Visible = xlSheetVisible 'show and activate the worksheet
+WSI.Activate
+
+End Sub
+
+'This sub calls the change form
+Sub call_change_form()
+
+'dimension of the variables
+Dim task As String
+Dim index_db As Integer
+
+'initialize all repetitive variables
+Call initialize_wb
+
+On Error Resume Next
+task = selector.List(selector.ListIndex) 'get task that is selected in the dropdown
+If task = "" Then
+    MsgBox "No task selected", Title:="No Task selected" 'inform user, if no task is selected
+    Exit Sub
+End If
+index_db = Application.WorksheetFunction.Match(task, col_task_db, 0) 'get index of the task in the database
+On Error GoTo 0
+
+'delete all existing entries
+With WSI
+    .Range("E6:E10").ClearContents
+    .Range("K6:k10").ClearContents
+    .Range("O6:O8").ClearContents
+End With
+
+'fill in the form with the data of the task
+Call get_data("E6", header_task_db, index_db, DataTable) 'sub to get the data of the task
+Call get_data("E8", header_category_db, index_db, DataTable)
+Call get_data("E10", header_main_db, index_db, DataTable)
+
+Call get_data("K6", header_left_db, index_db, DataTable)
+Call get_data("K8", header_duration_db, index_db, DataTable)
+Call get_data("K10", header_mandatory_db, index_db, DataTable)
+Call get_data("O6", header_benefit_db, index_db, DataTable)
+Call get_data("O8", header_timetobenefit_db, index_db, DataTable)
+
+WSI.Range("B2") = "Change Task" 'change header
+WSI.Visible = xlSheetVisible 'show the worksheet and activate it
+WSI.Activate
+
+End Sub
+
+'This function gets the data from the database and inserts it into the form
+Public Sub get_data(adr, header As String, index As Integer, DataTable As ListObject)
+
+' dimenstion of the variables
+Dim cal As Range
+
+
+'initialize all repetitive variables
+Call initialize_wb
+
+'set the current column
+Set col = DataTable.ListColumns(header).DataBodyRange
+
+'insert the data from the database
+WSI.Range(adr) = col(index)
+
+End Sub
+
+Sub close_form()
+
+'initialize all repetitive variables
+Call initialize_wb
+
+Tabelle1.Activate 'activate the dashboard
+WSI.Visible = xlSheetHidden 'hide the form
+
+End Sub

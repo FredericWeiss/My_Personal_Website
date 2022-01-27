@@ -1,0 +1,85 @@
+'this module is responsible for getting the data for the graphs
+
+
+Option Explicit
+
+Sub get_statistics_data()
+
+'dimenstion the variables
+Dim gold_counter As Integer
+Dim silver_counter As Integer
+Dim bronze_counter As Integer
+Dim counter_category As Integer
+Dim i As Integer
+Dim n As Integer
+Dim nextrow As Integer
+Dim finalrow As Integer
+Dim sum_days As Double
+Dim cluster As String
+Dim pivot_table_one As PivotTable
+Dim pivot_table_two As PivotTable
+Dim pivot_table_three As PivotTable
+Dim pivot_cache_one As PivotCache
+Dim pivot_cache_two As PivotCache
+
+'setting the pivot tables
+Set pivot_table_one = WSP.PivotTables("PivotTable2")
+Set pivot_table_two = WSP.PivotTables("PivotTable5")
+Set pivot_table_three = WSP.PivotTables("PivotTable1")
+
+'initialize all repetitive variables
+Call initialize_wb
+
+For i = 1 To RankingTable.ListRows.Count 'loop through the ranking
+    cluster = col_cluster_dash(i)
+    Select Case cluster 'check the cluster of the task an inkrement the right counter
+        Case "Gold"
+            gold_counter = gold_counter + 1
+        Case "Silver"
+            silver_counter = silver_counter + 1
+        Case "Bronze"
+            bronze_counter = bronze_counter + 1
+    End Select
+Next i
+
+'enter the new data into the worksheet the holds the data for the charts
+WSP.Range("B2") = gold_counter
+WSP.Range("B3") = silver_counter
+WSP.Range("B4") = bronze_counter
+
+'-- first input is finished --
+
+WSP.Range("A7:C20").Clear 'clear the input area of the second input
+For i = 1 To DataTable.ListRows.Count 'loop throung all rows in the database
+    nextrow = WSP.Cells(Rows.Count, 1).End(xlUp).Row + 1
+    WSP.Cells(nextrow, 1) = col_category_db(i) 'add the category of the task to the second input area
+Next i
+WSP.Range("A7:A" & nextrow).RemoveDuplicates Columns:=1, header:=xlNo 'remove categorys that are duplicates
+
+finalrow = WSP.Cells(Rows.Count, 1).End(xlUp).Row
+For i = 7 To finalrow 'loop through all categorys that have been collected
+    counter_category = 0 'reset counter
+    sum_days = 0
+    For n = 1 To DataTable.ListRows.Count 'loop through all rows of the database
+        If WSP.Cells(i, 1) = col_category_db(n) Then
+            counter_category = counter_category + 1 'count the occurance of the current category
+            sum_days = sum_days + col_duration_db(n) 'sum up the required hours to complete the tasks of the current category
+        End If
+    Next n
+    'enter the data into the worksheet the holds the data for creating the graphs
+    WSP.Cells(i, 2) = counter_category
+    WSP.Cells(i, 3) = sum_days
+Next i
+
+WSP.PivotTables("PivotTable1").RefreshTable 'refresh the first pivot table
+
+'set the pivot cache for the remaining pivot tables and refresh them
+Set pivot_cache_one = ThisWorkbook.PivotCaches.Create(xlDatabase, WSP.Range("A6:C" & finalrow))
+pivot_table_one.ChangePivotCache pivot_cache_one
+pivot_table_one.RefreshTable
+
+Set pivot_cache_two = ThisWorkbook.PivotCaches.Create(xlDatabase, WSP.Range("A6:C" & finalrow))
+pivot_table_two.ChangePivotCache pivot_cache_two
+pivot_table_two.RefreshTable
+    
+End Sub

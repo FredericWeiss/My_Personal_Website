@@ -1,0 +1,40 @@
+'This module is responsible for the dropdown onn the dashboard
+
+
+Option Explicit
+
+Sub Dropdown1_BeiÄnderung()
+
+'dimension the variables
+Dim task_selected As String
+Dim i As Integer
+Dim index_db As Integer
+Dim index_dash As Integer
+
+'initialize all repetetive variables
+Call initialize_wb
+
+For i = 1 To RankingTable.ListRows.Count 'loop trough all rows in the list that displaxs the ranking
+    If RankingTable.ListRows(i).Range.Interior.Color = RGB(255, 215, 0) Then 'Check if the row is marked as selected
+        On Error Resume Next
+        index_db = Application.WorksheetFunction.Match(col_task_dash(i), col_task_db, 0) 'find marked task in database
+        On Error GoTo 0
+        'change back the colors of marked tasks
+        If col_task_db(index_db) = col_main_db(index_db) Then
+            RankingTable.ListRows(i).Range.Interior.Color = RGB(182, 225, 169)
+        ElseIf col_main_db(index_db) = "" Then
+            RankingTable.ListRows(i).Range.Interior.Color = RGB(148, 200, 219)
+        Else
+            RankingTable.ListRows(i).Range.Interior.Color = RGB(250, 128, 114)
+        End If
+    End If
+Next i
+        
+task_selected = selector.List(selector.ListIndex) 'get the selected task from the dropdown
+On Error Resume Next
+index_dash = Application.WorksheetFunction.Match(task_selected, col_task_dash, 0) 'find the selected task on the dashboard
+On Error GoTo 0
+RankingTable.ListRows(index_dash).Range.Interior.Color = RGB(255, 215, 0) 'color the selected task
+
+    
+End Sub

@@ -1,0 +1,81 @@
+'This module is responsible for reacting on certain actions on the dashboard
+
+
+Option Explicit
+
+Private Sub Worksheet_Activate() 'This macro gets triggered if the worksheets gets activated
+
+'dimension the variable
+Dim i As Integer
+
+'initialize all repetitive variables
+Call initialize_wb
+
+selector.RemoveAllItems 'remove all items in dropdown
+
+'fill dropdown with tasks from database
+For i = 1 To DataTable.ListRows.Count
+    selector.AddItem (col_task_db(i))
+Next i
+
+End Sub
+
+Private Sub Worksheet_Change(ByVal Target As Range) 'This marcro gets triggered if range D4 on the dashboard gets changed
+
+'dimension the variables
+Dim hours_available As Double
+Dim hours_sum As Double
+Dim i As Integer
+Dim n As Integer
+
+'initialize all repetitive variables
+Call initialize_wb
+
+If Target.Address = WSD.Range("D4").Address Then 'check if range D4 was changed
+
+    'change ranking to standard formatting
+    RankingTable.DataBodyRange.Font.Bold = False
+    RankingTable.DataBodyRange.Font.Size = 9.5
+
+    hours_available = WSD.Range("D4") 'save available time in a variable
+    i = 1
+    'loop trogh the ranking and sum up the expected duration of the tasks until the duration is higher than the available time
+    Do While hours_sum < hours_available
+        hours_sum = hours_sum + col_duration_dash(i)
+        i = i + 1
+    Loop
+    'Change font of all task that can be managed in the available time to bold and font size 12
+    For n = 1 To i - 2
+        RankingTable.ListRows(n).Range.Font.Bold = True
+        RankingTable.ListRows(n).Range.Font.Size = 12
+    Next n
+End If
+
+End Sub
+
+Private Sub Worksheet_Deactivate() 'This macro gets triggered when the workbook gets closed
+
+'dimension the variables
+Dim i As Integer
+Dim index_db As Integer
+
+'initialize all repetitive variables
+Call initialize_wb
+
+For i = 1 To RankingTable.ListRows.Count 'loop trough all rows of the ranking
+    If RankingTable.ListRows(i).Range.Interior.Color = RGB(255, 215, 0) Then 'check if the row is marked
+        On Error Resume Next
+        index_db = Application.WorksheetFunction.Match(col_task_dash(i), col_task_db, 0) 'find marked task in the database
+        On Error GoTo 0
+        'change marked task to the default color
+        If col_task_db(index_db) = col_main_db(index_db) Then
+            RankingTable.ListRows(i).Range.Interior.Color = RGB(182, 225, 169)
+        ElseIf col_main_db(index_db) = "" Then
+            RankingTable.ListRows(i).Range.Interior.Color = RGB(148, 200, 219)
+        Else
+            RankingTable.ListRows(i).Range.Interior.Color = RGB(250, 128, 114)
+        End If
+    End If
+Next i
+
+End Sub

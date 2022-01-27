@@ -1,0 +1,35 @@
+'This module is responsible for deleting tasks from the database
+
+Option Explicit
+
+Sub delete_task()
+
+'dimension the variables
+Dim task_found As Range
+Dim task_selected As String
+Dim answer As String
+
+'call initialize sub
+Call initialize_wb
+
+On Error Resume Next
+task_selected = selector.List(selector.ListIndex) 'get selected task in the dropdown on the dashboard
+If task_selected = "" Then
+    MsgBox "No task selected", Title:="No Task selected" 'if no task was selected, show an error message and exit the sub
+    Exit Sub
+End If
+On Error GoTo 0
+
+answer = MsgBox("Do you really want to delete this task: " & task_selected, vbYesNo, "Delete Task") 'get insurance that the task should be deleted
+If answer = 6 Then 'if yes
+    Set task_found = WSDB.Range("C5").CurrentRegion.Find(what:=task_selected, LookIn:=xlValues, lookat:=xlWhole) 'find range with taskname in it
+    WSDB.Rows(task_found.Row).delete 'delete the entry of the database
+Else
+    Exit Sub 'if the task should not be deleted exit the sub
+End If
+
+WSDB.Activate
+WSD.Activate 'deactivate and reactivate the dashboard to refresh the dropdown
+Call get_ranking 'call sub to refresh the ranking
+
+End Sub

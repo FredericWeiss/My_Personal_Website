@@ -1,0 +1,105 @@
+'This module initializes all frequetly used variables and objects
+
+'globally defining variables for the worksheets
+Global WSD As Worksheet
+Global WSDB As Worksheet
+Global WSP As Worksheet
+Global WSI As Worksheet
+
+'globally defining variables for the tables and the dropdown
+Global RankingTable As ListObject
+Global DataTable As ListObject
+Global selector As Variant
+
+'globally defining variables for the column of the table that displays the ranking
+Global col_rank_dash As Range
+Global col_task_dash As Range
+Global col_duration_dash As Range
+Global col_sore_dash As Range
+Global col_cluster_dash As Range
+
+'globally defining variables for the columns of the database
+Global col_id_db As Range
+Global col_task_db As Range
+Global col_category_db As Range
+Global col_main_db As Range
+Global col_left_db As Range
+Global col_duration_db As Range
+Global col_mandatory_db As Range
+Global col_benefit_db As Range
+Global col_timetobenefit_db As Range
+Global col_score_db As Range
+
+'globally defining variables for the columnheaders of the table that displays the ranking
+Global header_rank_dash As String
+Global header_task_dash As String
+Global header_duration_dash As String
+Global header_score_dash As String
+Global header_cluster_dash As String
+
+'globally defining variables for the columnheaders of the database
+Global header_id_db As String
+Global header_task_db As String
+Global header_category_db As String
+Global header_main_db As String
+Global header_left_db As String
+Global header_duration_db As String
+Global header_mandatory_db As String
+Global header_benefit_db As String
+Global header_timetobenefit_db As String
+Global header_score_db As String
+
+
+'This sub sets values for the above defined variables
+
+Sub initialize_wb()
+
+'giving header variables of table that displays the ranking values
+header_rank_dash = "Rank"
+header_task_dash = "Task"
+header_duration_dash = "Expected Duration [h]"
+header_score_dash = "Score"
+header_cluster_dash = "Cluster"
+
+'giving header variables of database values
+header_id_db = "ID"
+header_task_db = "Task"
+header_category_db = "Category"
+header_main_db = "Main Task"
+header_left_db = "Days Left"
+header_duration_db = "Expected Duration [h]"
+header_mandatory_db = "Mandatory"
+header_benefit_db = "Benefit"
+header_timetobenefit_db = "Time to Benefit (after completion) [Days]"
+header_score_db = "Score"
+
+'setting worksheet objects and the dropdown object
+Set WSD = ThisWorkbook.Worksheets("Dashboard")
+Set WSDB = ThisWorkbook.Worksheets("Database")
+Set WSP = ThisWorkbook.Worksheets("Pivot")
+Set WSI = ThisWorkbook.Worksheets("Insert Data")
+Set selector = WSD.DropDowns("Dropdown 1")
+
+'setting the both tables
+Set RankingTable = WSD.ListObjects("RankingTable")
+Set DataTable = WSDB.ListObjects("Database")
+
+'setting the columns of the table that displays the ranking
+Set col_rank_dash = RankingTable.ListColumns(header_rank_dash).DataBodyRange
+Set col_task_dash = RankingTable.ListColumns(header_task_dash).DataBodyRange
+Set col_duration_dash = RankingTable.ListColumns(header_duration_dash).DataBodyRange
+Set col_score_dash = RankingTable.ListColumns(header_score_dash).DataBodyRange
+Set col_cluster_dash = RankingTable.ListColumns(header_cluster_dash).DataBodyRange
+
+'setting the columns of the database
+Set col_id_db = DataTable.ListColumns(header_id_db).DataBodyRange
+Set col_task_db = DataTable.ListColumns(header_task_db).DataBodyRange
+Set col_category_db = DataTable.ListColumns(header_category_db).DataBodyRange
+Set col_main_db = DataTable.ListColumns(header_main_db).DataBodyRange
+Set col_left_db = DataTable.ListColumns(header_left_db).DataBodyRange
+Set col_duration_db = DataTable.ListColumns(header_duration_db).DataBodyRange
+Set col_mandatory_db = DataTable.ListColumns(header_mandatory_db).DataBodyRange
+Set col_benefit_db = DataTable.ListColumns(header_benefit_db).DataBodyRange
+Set col_timetobenefit_db = DataTable.ListColumns(header_timetobenefit_db).DataBodyRange
+
+End Sub

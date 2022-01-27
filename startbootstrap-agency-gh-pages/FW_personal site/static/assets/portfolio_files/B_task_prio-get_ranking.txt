@@ -1,0 +1,158 @@
+'This module is responsible for creating the ranking on the dashboard
+
+
+Option Explicit
+
+Sub get_ranking()
+
+'dimension the variables
+Dim temptable As ListObject
+Dim task_range As Range
+Dim rank_range As Range
+Dim input_range As Range
+Dim main_arr() As Variant
+Dim components_arr() As Variant
+Dim i As Integer
+Dim n As Integer
+Dim x As Integer
+Dim finalrow_dash As Integer
+Dim finalrow_db As Integer
+Dim nextrow_main As Integer
+Dim firstrow_dash As Integer
+Dim counter As Integer
+Dim color_counter As Integer
+Dim index_dash As Integer
+Dim index_db As Integer
+Dim rank_main As Integer
+
+'initialize all repetitive variables
+Call initialize_wb
+
+'reset counter
+counter = 0
+color_counter = 1
+
+Set rank_range = WSD.Range("A1:D100").Find(what:="Rank")
+firstrow_dash = rank_range.Row 'detect first row of the ranking
+
+'delete the current ranking
+For i = RankingTable.ListRows.Count To 1 Step -1
+    RankingTable.ListRows(i).delete
+Next i
+
+finalrow_db = WSDB.Cells(Rows.Count, 2).End(xlUp).Row 'detect final row of the database
+For i = 1 To DataTable.ListRows.Count 'loop throug every entry of the database
+    Set task_range = WSDB.Range("C5:C" & finalrow_db).Find(what:=col_main_db(i), lookat:=xlWhole) 'check if the current task is part of a main task
+    If task_range Is Nothing Or col_task_db(i) = col_main_db(i) Then 'check if task is not a component of a main task
+        RankingTable.ListRows.Add 'add a new row to the ranking table
+        'Insert the data of the task
+        Call insert_data(header_task_dash, i, RankingTable.ListRows.Count)
+        Call insert_data(header_duration_dash, i, RankingTable.ListRows.Count)
+        Call insert_data(header_score_db, i, RankingTable.ListRows.Count)
+        'Color the rows in the ranking
+        If col_task_db(i) = col_main_db(i) Then
+            RankingTable.ListRows(color_counter).Range.Interior.Color = RGB(182, 225, 169)
+        Else
+            RankingTable.ListRows(color_counter).Range.Interior.Color = RGB(148, 200, 219)
+        End If
+        color_counter = color_counter + 1 'inkrement to counter that counts how many rows got added
+    End If
+Next i
+
+finalrow_dash = WSD.Cells(Rows.Count, 2).End(xlUp).Row 'define the final row of the dashboard
+
+'sort the ranking based on the score
+With RankingTable
+    .Range.Sort key1:=.ListColumns(header_score_dash).DataBodyRange, order1:=xlDescending, header:=xlYes
+End With
+
+'insert the ranking into the table that displays the ranking
+For i = 1 To RankingTable.ListRows.Count
+    col_rank_dash(i) = i
+Next i
+
+'--now the ranking is complete for normal tasks that are not components of main tasks and main tasks without their componenets--
+
+counter = 0 'reset counter
+
+For i = 1 To DataTable.ListRows.Count 'loop through every row in the database
+    If col_main_db(i) = col_task_db(i) Then 'check if the task is a main task
+        ReDim Preserve main_arr(counter) 'if yes save it in an array
+        main_arr(counter) = col_main_db(i)
+        counter = counter + 1
+    End If
+Next i
+
+For i = LBound(main_arr) To UBound(main_arr) 'loop though main task array
+    ReDim components_arr(0) 'reset array with components of the main task
+    counter = 0
+    For n = 1 To DataTable.ListRows.Count 'loop through all rows of the database
+        If col_main_db(n) = main_arr(i) And col_main_db(n) <> col_task_db(n) Then 'check if the task is part of the current main task
+            ReDim Preserve components_arr(counter) 'add the task to the component array
+            components_arr(counter) = col_task_db(n)
+            counter = counter + 1
+        End If
+    Next n
+    
+    Set task_range = WSD.Range("C10").CurrentRegion.Find(what:=main_arr(i), lookat:=xlWhole) 'find the main task in the current ranking
+    x = 0
+    On Error Resume Next
+    index_dash = Application.WorksheetFunction.Match(main_arr(i), col_task_dash, 0) 'get the table index of the main task in the current ranking
+    On Error GoTo 0
+    rank_main = col_rank_dash(index_dash) 'save the rank of the main array in a variable
+    For n = LBound(components_arr) To UBound(components_arr) 'loop through the array that contains all components of the current main tasks
+        On Error Resume Next
+        index_db = Application.WorksheetFunction.Match(components_arr(n), col_task_db, 0)
+        On Error GoTo 0
+        WSD.Rows(task_range.Row + 1).insert 'insert a new row below the current main task
+        RankingTable.ListRows(index_dash + 1).Range.Interior.Color = RGB(250, 128, 114) 'color the row
+        Call insert_data(header_task_db, index_db, index_dash + 1) 'insert the data
+        Call insert_data(header_duration_db, index_db, index_dash + 1)
+        Call insert_data(header_score_db, index_db, index_dash + 1)
+    Next n
+    
+    WSD.Cells(task_range.Row + 1, rank_range.Column + 1).Resize(n, 3).Cut _
+    Destination:=WSD.Range("Z1") 'cut the area with the components an paste is in range Z1
+    Set input_range = WSD.Range("Z1").Resize(n, 3)
+    Set temptable = WSD.ListObjects.Add(xlSrcRange, input_range, , xlNo) 'create a temporary table with the cut contents
+    With temptable
+        .Range.Sort key1:=WSD.Range("AB2"), order1:=xlDescending, header:=xlNo 'sort the new ranking by score
+    End With
+    WSD.Range(WSD.Cells(2, 26), WSD.Cells(n + 1, 28)).Cut _
+    Destination:=WSD.Cells(task_range.Row + 1, rank_range.Column + 1) 'cut the temporary table and paste it back into the ranking
+    For x = 1 To 3
+        WSD.Columns(26).delete 'delete the columns of the temporary table
+    Next x
+    
+    For x = 1 To n
+        col_rank_dash(index_dash + x) = rank_main & "." & x 'insert the ranking for the components of the current main task
+    Next x
+    
+Next i
+
+WSD.Range("D4") = WSD.Range("D4").value 'refresh cell D4 to highlight task that could be done in the available time
+
+Call get_statistics_data 'cll the makro that gets the data for the graphs
+
+End Sub
+
+
+'this sub is responsible to fill the ranking table with the contents from the database
+
+Public Sub insert_data(ByVal col_header As String, index_db, index_dash As Integer)
+
+'dimension the variables
+Dim col_dash As Range
+Dim col_db As Range
+
+'setting the columns
+Set col_dash = RankingTable.ListColumns(col_header).DataBodyRange
+Set col_db = DataTable.ListColumns(col_header).DataBodyRange
+
+'initialize all repetitive variables
+Call initialize_wb
+
+'insert the data from the database into the ranking
+col_dash(index_dash) = col_db(index_db)
+
+End Sub
