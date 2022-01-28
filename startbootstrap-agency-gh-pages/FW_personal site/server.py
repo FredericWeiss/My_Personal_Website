@@ -70,9 +70,6 @@ def home():
     education_data = Experience.query.filter(Experience.topic == "education")
     skill_data = Experience.query.filter(Experience.topic == "skills")
     contact_form = MyForm()
-#     directory = os.fsencode(PATH)
-#     filenames = [str(os.fsencode(file)).split(".")[0] for file in os.listdir(directory)]
-#     filenames = sorted(filenames, key=str.lower)
     if contact_form.validate_on_submit():
         name = contact_form.name.data
         mail = contact_form.mail.data
