@@ -83,6 +83,7 @@
                         <h4 class="subheading">{{ entry.header }}</h4>
                     </div>
                     <div class="timeline-body"><p class="text-muted">{{ entry.short_description }}</p></div>
+                    <div class="portfolio-caption-subheading text-muted" style="margin-top: 15px;">Photo By <a href="{{ entry.reference_one }}">{{ entry.reference_two }}</a> on <a href="{{ entry.reference_three }}">{{ entry.reference_four }}</a></div>
                 </div>
             </li>
             {% endfor %}
@@ -161,3 +162,4 @@
 {% include "modals.html" %}
 {% include "end_of_page.html" %}
 
+Photo by <a href="https://unsplash.com/@napr0tiv?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Vasily Koloda</a> on <a href="https://unsplash.com/s/photos/school?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Unsplash</a>
