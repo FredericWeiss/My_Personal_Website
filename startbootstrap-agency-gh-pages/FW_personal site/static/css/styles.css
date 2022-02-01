@@ -9922,7 +9922,7 @@ textarea.form-control-lg {
   }
 
   .text-lg-start {
-    text-align: center !important;
+    text-align: left !important;
     padding-top: 20px;
   }
 
